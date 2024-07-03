@@ -91,7 +91,7 @@ routes.get('/cursos', async (req, res) => {
     try {
         let params = {};  // Usar 'let' para permitir modificação
 
-        if (req.query.nome) {  // Verificar 'req.query.nome'
+        if (req.query.nome) {  // Verificar 're"q.query.nome'
             params = { ...params, nome: req.query.nome };  // Corrigir para 'req.query.nome'
         }
 
@@ -106,6 +106,48 @@ routes.get('/cursos', async (req, res) => {
     }
 });
 
+// Atualizar o curso
+routes.put('/cursos/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Verificar se o curso existe
+        let curso = await Curso.findByPk(id);
+
+        if (!curso) {
+            return res.status(404).json({ mensagem: 'Curso não encontrado' });
+        }
+
+        // Extrair dados do corpo da requisição
+        const { nome, duracao_horas } = req.body;
+
+        // Validar dados recebidos
+        if (!nome) {
+            return res.status(400).json({ mensagem: 'O nome do curso é obrigatório' });
+        }
+        
+        if (!duracao_horas) {
+            return res.status(400).json({ mensagem: 'A duração do curso em horas é obrigatória' });
+        }
+
+        if (!(duracao_horas >= 40 && duracao_horas <= 200)) {
+            return res.status(400).json({ mensagem: 'Carga horária não permitida. A carga horária deve ser entre 40 e 200 horas' });
+        }
+
+        // Atualizar o curso no banco de dados
+        curso = await curso.update({
+            nome,
+            duracao_horas
+        });
+
+        res.status(200).json(curso); // Retornar o curso atualizado
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ error: 'Erro ao atualizar curso' });
+    }
+});
+
+module.exports = routes;
 
 // Deletar um curso
 
